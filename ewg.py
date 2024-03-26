@@ -73,12 +73,7 @@ zip_df.drop(droped, axis=1, inplace=True)
 zip_df['state_name'] = zip_df['state_name'].fillna(zip_df['state_id'].map(missing_state))
 
 
-# use zip_df.isna().sum() to check missing data. We find that no zip code
-# is missing from the data.
-
 # scrapping
-# ewg url: https://www.ewg.org/tapwater/search-results.php?zip5=ZIP_CODE&searchtype=zip
-# consider only the relevant parts of US
 relevant_states = [
     'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 
     'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 
@@ -91,7 +86,6 @@ relevant_states = [
 
 zip_df = zip_df[zip_df['state_name'].isin(relevant_states)]
 
-#
 
 BASE_URL = 'https://www.ewg.org/tapwater/'
 SEARCH_URL_START = 'search-results.php?zip5='
@@ -198,9 +192,6 @@ def process_zip(zip_value, state_id, zcta, county_fips, female, income_household
             return no_table(results[0], zip_value, state_id, zcta, county_fips, female, income_household_median, home_ownership, education_college_or_above, race_white)
     else:
         return []
-    
-# if results == []:
-#           results = soup.find_all('div', {'class': 'featured-utility'})
 
     
 
@@ -230,172 +221,6 @@ ewg_tap_water_df = ewg_tap_water_df[ewg_tap_water_df['pws'] != '.php?pws=']
 ewg_tap_water_df.to_csv('ewg.csv')
 
 
-# 
-
-os.chdir("D:\data\Water Fluoridation\MWF")
-path = os.getcwd()
-files = os.listdir(path)
-
-wfr_16_list = [f for f in files if f[3:9] == "16.csv"]
-wfr_17_list = [f for f in files if f[3:9] == "17.csv"]
-wfr_18_list = [f for f in files if f[3:9] == "18.csv"]
-wfr_19_list = [f for f in files if f[3:9] == "19.csv"]
-
-
-wfr_16 = []
-
-for f in wfr_16_list:
-    df = pd.read_csv(f, encoding = 'unicode_escape',usecols=['PWS ID', 'Population Served', 'Fluoridated','Fluoride Conc.'])
-    df = df.rename(columns = {'PWS ID':'pws'})
-    df['pws'] = df['pws'].replace('-', '', regex=True)
-    df['pws'] = df['pws'].replace(' ', '')
-    
-    df['year'] = '2016'
-    wfr_16.append(df)
-    
-
-    
-wfr_17 = []
-
-for f in wfr_17_list:
-    df = pd.read_csv(f, encoding = 'unicode_escape',usecols=['PWS ID', 'Population Served', 'Fluoridated','Fluoride Conc.'])
-    df = df.rename(columns = {'PWS ID':'pws'})
-    df['pws'] = df['pws'].replace('-', '', regex=True)
-    df['pws'] = df['pws'].replace(' ', '')
-    df['year'] = '2017'
-    wfr_17.append(df)
-    
-    
-wfr_18 = []
-
-for f in wfr_18_list:
-    df = pd.read_csv(f, encoding = 'unicode_escape',usecols=['PWS ID', 'Population Served', 'Fluoridated','Fluoride Conc.'])
-    df = df.rename(columns = {'PWS ID':'pws'})
-    df['pws'] = df['pws'].replace('-', '', regex=True)
-    df['pws'] = df['pws'].replace(' ', '')
-    df['year'] = '2018'
-    wfr_18.append(df)
-    
-
-wfr_19 = []
-
-for f in wfr_19_list:
-    df = pd.read_csv(f, encoding = 'unicode_escape',usecols=['PWS ID', 'Population Served', 'Fluoridated','Fluoride Conc.'])
-    df = df.rename(columns = {'PWS ID':'pws'})
-    df['pws'] = df['pws'].replace('-', '', regex=True)
-    df['pws'] = df['pws'].replace(' ', '')
-    df['year'] = '2019'
-    wfr_19.append(df)
-    
-ewg_df = pd.read_csv(r'D:\data\Water Fluoridation\zip\ewg.csv', dtype={'people_served': str})
-    
-
-wfr_16_df = pd.concat(wfr_16)
-wfr_17_df = pd.concat(wfr_17)
-wfr_18_df = pd.concat(wfr_18)
-wfr_19_df = pd.concat(wfr_19)   
-
-wfr_16_df = wfr_16_df.drop_duplicates(subset = ['pws'])
-wfr_17_df = wfr_17_df.drop_duplicates(subset = ['pws'])
-wfr_18_df = wfr_18_df.drop_duplicates(subset = ['pws'])
-wfr_19_df = wfr_19_df.drop_duplicates(subset = ['pws'])
-
-
-wfr_16_df.reset_index(drop = True)
-wfr_17_df.reset_index(drop = True) 
-wfr_18_df.reset_index(drop = True) 
-wfr_19_df.reset_index(drop = True)  
-
-wfr_16_df.to_csv('wfr_16_con.csv')
-wfr_17_df.to_csv('wfr_17_con.csv')
-wfr_18_df.to_csv('wfr_18_con.csv')
-wfr_19_df.to_csv('wfr_19_con.csv')
-
-
-wfr_4y = [wfr_16_df,wfr_17_df,wfr_18_df,wfr_19_df]
-wfr_4y_df = pd.concat(wfr_4y)
-
-wfr_4y_df.reset_index()
-
-wfr_4y_df.to_csv('wfr_4y.csv')
-
-
-#county map
-df_16 = pd.read_csv('16.csv', dtype={'county_fips': str})
-df_16['county_fips']=df_16['county_fips'].str.rjust(5, "0")
-df_16 = df_16.rename(columns = {'pct_2':'% served'})
-df_17 = pd.read_csv('17.csv', encoding = 'unicode_escape', dtype={'county_fips': str})
-df_17['county_fips']=df_17['county_fips'].str.rjust(5, "0")
-df_17 = df_17.rename(columns = {'pct_2':'% served'})
-df_18 = pd.read_csv('18.csv', encoding = 'unicode_escape', dtype={'county_fips': str})
-df_18['county_fips']=df_18['county_fips'].str.rjust(5, "0")
-df_18 = df_18.rename(columns = {'pct_2':'% served'})
-df_19 = pd.read_csv('19.csv', encoding = 'unicode_escape', dtype={'county_fips': str})
-df_19['county_fips']=df_19['county_fips'].str.rjust(5, "0")
-df_19 = df_19.rename(columns = {'pct_2':'% served'})
-
-
-# Read in unemployment rates
-df_16.to_csv('161.csv')
-unemployment = {}
-min_value = 100; max_value = 0
-reader = csv.reader(open('161.csv'), delimiter=",")
-for row in reader:
-    try:
-        full_fips = row[1]
-        rate = float( row[3].strip() )
-        unemployment[full_fips] = rate
-    except:
-        pass
-    
-
- 
-#If I remember correctly, the following cannot procceed 
-# Load the SVG map
-svg = open('counties.svg', 'r').read()
- 
-# Load into Beautiful Soup
-soup = BeautifulSoup(svg, selfClosingTags=['defs','sodipodi:namedview'])
- 
-# Find counties
-paths = soup.findAll('path')
- 
-# Map colors
-colors = ["#F1EEF6", "#D4B9DA", "#C994C7", "#DF65B0", "#DD1C77", "#980043"]
- 
-# County style
-path_style = 'font-size:12px;fill-rule:nonzero;stroke:#FFFFFF;stroke-opacity:1;stroke-width:0.1;stroke-miterlimit:4;stroke-dasharray:none;stroke-linecap:butt;marker-start:none;stroke-linejoin:bevel;fill:'
- 
-# Color the counties based on unemployment rate
-for p in paths:
-     
-    if p['id'] not in ["State_Lines", "separator"]:
-        try:
-            rate = unemployment[p['id']]
-        except:
-            continue
-             
-         
-        if rate > 10:
-            color_class = 5
-        elif rate > 8:
-            color_class = 4
-        elif rate > 6:
-            color_class = 3
-        elif rate > 4:
-            color_class = 2
-        elif rate > 2:
-            color_class = 1
-        else:
-            color_class = 0
- 
- 
-        color = colors[color_class]
-        p['style'] = path_style + color
- 
-print (soup.prettify())
-
-sss = soup.prettify()
 
 
 
